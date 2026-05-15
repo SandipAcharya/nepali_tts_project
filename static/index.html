@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>नेपाली TTS — समाचार वाचक</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:      #0a0c0f;
+  --surface: #111318;
+  --card:    #161b22;
+  --border:  #21262d;
+  --accent:  #e63946;
+  --accent2: #f4a261;
+  --text:    #e6edf3;
+  --muted:   #7d8590;
+  --green:   #3fb950;
+  --glow:    rgba(230,57,70,0.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(255,255,255,0.012) 2px, rgba(255,255,255,0.012) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ── HEADER ── */
+header {
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #0f1218 0%, var(--bg) 100%);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.logo { display: flex; align-items: center; gap: 12px; }
+
+.logo-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--accent); }
+  50%       { opacity: 0.5; box-shadow: 0 0 4px var(--accent); }
+}
+
+.logo-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 3px;
+}
+
+.logo-subtitle {
+  font-size: 0.65rem;
+  letter-spacing: 4px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.status-badge {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background 0.4s, box-shadow 0.4s;
+}
+.status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.status-dot.error  { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+/* ── LAYOUT ── */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+
+/* ── CARD ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.02);
+}
+
+.card-icon { font-size: 1rem; opacity: 0.7; }
+
+.card-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.card-body { padding: 20px; }
+
+/* ── TEXTAREA ── */
+textarea {
+  width: 100%;
+  min-height: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  padding: 14px 16px;
+  resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(230,57,70,0.12);
+}
+
+textarea::placeholder { color: var(--muted); font-size: 0.95rem; }
+
+.char-count {
+  text-align: right;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── NORMALIZED PREVIEW ── */
+.normalized-wrap {
+  display: none;
+  margin-top: 16px;
+}
+
+.normalized-label {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.normalized-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent2);
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--accent2);
+  min-height: 52px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── CONTROLS ── */
+.controls { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.speaker-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.speaker-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  color: var(--text);
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+.speaker-btn:hover { border-color: var(--accent); background: var(--glow); }
+.speaker-btn.active {
+  border-color: var(--accent);
+  background: rgba(230,57,70,0.1);
+  box-shadow: 0 0 0 1px rgba(230,57,70,0.3) inset;
+}
+
+.speaker-icon { font-size: 1.1rem; display: block; margin-bottom: 4px; }
+.speaker-name { font-size: 0.78rem; font-weight: 600; color: var(--text); display: block; }
+.speaker-role { font-size: 0.65rem; color: var(--muted); display: block; margin-top: 2px; }
+
+.slider-group { display: flex; flex-direction: column; gap: 12px; }
+
+.slider-row { display: flex; flex-direction: column; gap: 6px; }
+
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.slider-label span:last-child { color: var(--accent2); font-weight: 500; }
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%; height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none; cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  transition: box-shadow 0.15s;
+}
+
+input[type=range]:hover::-webkit-slider-thumb { box-shadow: 0 0 12px var(--accent); }
+
+/* ── SYNTH BUTTON ── */
+.synth-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.synth-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+
+.synth-btn:hover::before { transform: translateX(100%); }
+.synth-btn:hover { background: #c1121f; box-shadow: 0 4px 20px rgba(230,57,70,0.4); }
+.synth-btn:active { transform: scale(0.98); }
+.synth-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.synth-btn:disabled::before { display: none; }
+
+/* ── NORM BUTTON ── */
+.norm-btn {
+  width: 100%;
+  background: transparent;
+  color: var(--accent2);
+  border: 1px solid var(--accent2);
+  border-radius: 6px;
+  padding: 9px;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+
+.norm-btn:hover { background: rgba(244,162,97,0.1); }
+
+/* ══════════════════════════════════════════════
+   WAVEFORM PLAYER
+══════════════════════════════════════════════ */
+#audioCard { display: none; }
+
+.waveform-player {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Canvas wrapper — click-to-seek, shows playhead */
+.waveform-wrap {
+  position: relative;
+  width: 100%;
+  height: 88px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+#waveCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Playhead line */
+.playhead {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: #fff;
+  opacity: 0.85;
+  pointer-events: none;
+  left: 0;
+  box-shadow: 0 0 6px rgba(255,255,255,0.5);
+  transition: left 0.05s linear;
+}
+
+/* Progress fill overlay drawn via canvas — playhead is enough */
+
+/* Controls row */
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.play-pause-btn {
+  flex-shrink: 0;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  box-shadow: 0 0 10px rgba(230,57,70,0.4);
+}
+
+.play-pause-btn:hover {
+  background: #c1121f;
+  box-shadow: 0 0 16px rgba(230,57,70,0.6);
+  transform: scale(1.06);
+}
+
+.play-pause-btn svg {
+  width: 14px; height: 14px;
+  fill: #fff;
+}
+
+.time-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.time-display .cur { color: var(--text); }
+
+/* Volume */
+.vol-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.vol-icon {
+  font-size: 0.8rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+input.vol-slider {
+  -webkit-appearance: none;
+  flex: 1; height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none; cursor: pointer;
+}
+
+input.vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background 0.15s;
+}
+
+input.vol-slider:hover::-webkit-slider-thumb { background: var(--accent2); }
+
+/* Meta & download */
+.player-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.audio-meta {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-decoration: none;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.15s;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.download-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+/* ── SPINNER ── */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed;
+  bottom: 2rem; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  z-index: 9999;
+  transition: transform 0.3s ease;
+  white-space: nowrap;
+}
+
+#toast.show    { transform: translateX(-50%) translateY(0); }
+#toast.error   { border-color: var(--accent); color: var(--accent); }
+#toast.success { border-color: var(--green);  color: var(--green); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <div>
+      <div class="logo-title">Nepali TTS</div>
+      <div class="logo-subtitle">News Anchor Synthesis</div>
+    </div>
+  </div>
+  <div class="status-badge">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusLabel">connecting…</span>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- LEFT -->
+  <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+    <!-- Text Input -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">📝</span>
+        <span class="card-title">Input Text</span>
+      </div>
+      <div class="card-body">
+        <textarea id="inputText"
+          placeholder="नेपाली पाठ यहाँ लेख्नुहोस्…&#10;(Enter Nepali text here)"></textarea>
+        <div class="char-count"><span id="charCount">0</span> characters</div>
+
+        <button class="norm-btn" onclick="previewNormalize()" style="margin-top:12px;">
+          ⟳  Preview Normalization
+        </button>
+
+        <div class="normalized-wrap" id="normalizedWrap">
+          <div class="normalized-label">Normalized Output</div>
+          <div class="normalized-box" id="normalizedBox"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audio Output -->
+    <div class="card" id="audioCard">
+      <div class="card-header">
+        <span class="card-icon">🔊</span>
+        <span class="card-title">Audio Output</span>
+      </div>
+      <div class="card-body">
+        <div class="waveform-player">
+
+          <!-- Waveform canvas + playhead -->
+          <div class="waveform-wrap" id="waveWrap">
+            <canvas id="waveCanvas"></canvas>
+            <div class="playhead" id="playhead"></div>
+          </div>
+
+          <!-- Play/Pause · Time · Volume -->
+          <div class="player-controls">
+            <button class="play-pause-btn" id="playPauseBtn" onclick="togglePlay()">
+              <!-- play icon -->
+              <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <!-- pause icon, hidden initially -->
+              <svg id="iconPause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+
+            <div class="time-display">
+              <span class="cur" id="curTime">0:00</span>
+              <span style="color:var(--border);margin:0 4px;">/</span>
+              <span id="durTime">0:00</span>
+            </div>
+
+            <div class="vol-row">
+              <span class="vol-icon">🔈</span>
+              <input type="range" class="vol-slider" id="volSlider"
+                min="0" max="1" step="0.02" value="1"
+                oninput="setVolume(this.value)"/>
+            </div>
+          </div>
+
+          <!-- Meta + Download -->
+          <div class="player-footer">
+            <div class="audio-meta" id="audioMeta">—</div>
+            <a class="download-btn" id="downloadBtn" style="display:none;">↓ Download WAV</a>
+          </div>
+
+        </div>
+        <!-- Hidden audio element for actual playback -->
+        <audio id="audioPlayer" style="display:none;"></audio>
+      </div>
+    </div>
+
+  </div><!-- /LEFT -->
+
+  <!-- RIGHT: Controls -->
+  <div class="controls">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🎙️</span>
+        <span class="card-title">Speaker</span>
+      </div>
+      <div class="card-body">
+        <div class="speaker-grid" id="speakerGrid"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">⚙️</span>
+        <span class="card-title">Parameters</span>
+      </div>
+      <div class="card-body slider-group">
+
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Speed</span><span id="speedVal">1.00</span>
+          </div>
+          <input type="range" id="speed" min="0.5" max="2.0" step="0.05" value="1.0"
+            oninput="document.getElementById('speedVal').textContent=parseFloat(this.value).toFixed(2)"/>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Noise Scale</span><span id="noiseVal">0.50</span>
+          </div>
+          <input type="range" id="noise" min="0.1" max="1.0" step="0.05" value="0.5"
+            oninput="document.getElementById('noiseVal').textContent=parseFloat(this.value).toFixed(2)"/>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-label">
+            <span>Noise Scale W</span><span id="noiseWVal">0.60</span>
+          </div>
+          <input type="range" id="noiseW" min="0.1" max="1.0" step="0.05" value="0.6"
+            oninput="document.getElementById('noiseWVal').textContent=parseFloat(this.value).toFixed(2)"/>
+        </div>
+
+      </div>
+    </div>
+
+    <button class="synth-btn" id="synthBtn" onclick="synthesize()">
+      Synthesize
+    </button>
+
+  </div><!-- /RIGHT -->
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let selectedSpeaker = 0;
+let currentAudioURL = null;
+let audioCtx        = null;
+let rafId           = null;
+const audio         = document.getElementById('audioPlayer');
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  await checkStatus();
+  await loadSpeakers();
+  document.getElementById('inputText').addEventListener('input', updateCharCount);
+
+  // Sync play/pause icon with audio element events
+  audio.addEventListener('play',  () => setPlayIcon(true));
+  audio.addEventListener('pause', () => setPlayIcon(false));
+  audio.addEventListener('ended', () => setPlayIcon(false));
+  audio.addEventListener('timeupdate', onTimeUpdate);
+
+  // Make waveform wrap click-to-seek
+  document.getElementById('waveWrap').addEventListener('click', seekFromClick);
+});
+
+// ── Status ────────────────────────────────────────────────────────────────────
+async function checkStatus() {
+  const dot = document.getElementById('statusDot');
+  const lbl = document.getElementById('statusLabel');
+  try {
+    const data = await fetch('/api/status').then(r => r.json());
+    if (data.model_loaded) {
+      dot.className  = 'status-dot online';
+      lbl.textContent = `MODEL ONLINE · ${data.device.toUpperCase()} · ${data.speakers} SPEAKERS`;
+    } else {
+      dot.className  = 'status-dot error';
+      lbl.textContent = 'DEMO MODE — NO MODEL';
+    }
+  } catch {
+    dot.className  = 'status-dot error';
+    lbl.textContent = 'SERVER OFFLINE';
+  }
+}
+
+// ── Speakers ──────────────────────────────────────────────────────────────────
+async function loadSpeakers() {
+  try {
+    const data = await fetch('/api/speakers').then(r => r.json());
+    const grid = document.getElementById('speakerGrid');
+    grid.innerHTML = '';
+    Object.entries(data).forEach(([id, info]) => {
+      const btn = document.createElement('button');
+      btn.className  = 'speaker-btn' + (parseInt(id) === selectedSpeaker ? ' active' : '');
+      btn.dataset.id = id;
+      btn.innerHTML  = `
+        <span class="speaker-icon">${info.icon}</span>
+        <span class="speaker-name">${info.name}</span>
+        <span class="speaker-role">${info.role}</span>`;
+      btn.onclick = () => selectSpeaker(parseInt(id));
+      grid.appendChild(btn);
+    });
+  } catch { showToast('Could not load speakers', 'error'); }
+}
+
+function selectSpeaker(id) {
+  selectedSpeaker = id;
+  document.querySelectorAll('.speaker-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.id) === id));
+}
+
+function updateCharCount() {
+  document.getElementById('charCount').textContent =
+    document.getElementById('inputText').value.length;
+}
+
+// ── Preview Normalization (manual button) ─────────────────────────────────────
+async function previewNormalize() {
+  const text = document.getElementById('inputText').value.trim();
+  if (!text) { showToast('Please enter some text first', 'error'); return; }
+  try {
+    const data = await fetch('/api/normalize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    }).then(r => r.json());
+    showNormalized(data.normalized);
+  } catch { showToast('Normalization request failed', 'error'); }
+}
+
+function showNormalized(text) {
+  if (!text) return;
+  document.getElementById('normalizedBox').textContent = text;
+  document.getElementById('normalizedWrap').style.display = 'block';
+}
+
+// ── Synthesize ────────────────────────────────────────────────────────────────
+async function synthesize() {
+  const text = document.getElementById('inputText').value.trim();
+  if (!text) { showToast('Please enter some text first', 'error'); return; }
+
+  const btn = document.getElementById('synthBtn');
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="spinner"></span>Synthesizing…';
+
+  try {
+    // Fire both requests in parallel: synthesis + normalization
+    const [synthRes, normData] = await Promise.all([
+      fetch('/api/synthesize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          speaker_id:    selectedSpeaker,
+          speed:         parseFloat(document.getElementById('speed').value),
+          noise_scale:   parseFloat(document.getElementById('noise').value),
+          noise_scale_w: parseFloat(document.getElementById('noiseW').value),
+        })
+      }),
+      fetch('/api/normalize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      }).then(r => r.json()).catch(() => ({ normalized: '' }))
+    ]);
+
+    // Always show normalized text (comes from /api/normalize — no encoding issues)
+    showNormalized(normData.normalized);
+
+    if (!synthRes.ok) {
+      const err = await synthRes.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${synthRes.status}`);
+    }
+
+    const contentType = synthRes.headers.get('Content-Type') || '';
+
+    if (contentType.includes('audio')) {
+      // --- Real model response ---
+      const arrayBuffer = await synthRes.arrayBuffer();
+      const blob        = new Blob([arrayBuffer], { type: 'audio/wav' });
+
+      if (currentAudioURL) URL.revokeObjectURL(currentAudioURL);
+      currentAudioURL = URL.createObjectURL(blob);
+
+      audio.src = currentAudioURL;
+      audio.load();
+
+      // Draw waveform from decoded audio data
+      await drawWaveform(arrayBuffer.slice(0));   // pass a copy to AudioContext
+
+      // Show card
+      document.getElementById('audioCard').style.display = 'block';
+      document.getElementById('audioMeta').textContent =
+        `Speaker ${selectedSpeaker} · ${(blob.size / 1024).toFixed(1)} KB`;
+
+      const dlBtn = document.getElementById('downloadBtn');
+      dlBtn.style.display = 'inline-flex';
+      dlBtn.href          = currentAudioURL;
+      dlBtn.download      = `tts_speaker${selectedSpeaker}.wav`;
+
+      audio.play().catch(() => {});
+      showToast('Audio synthesized successfully', 'success');
+
+    } else {
+      // --- Demo / no model ---
+      const data = await synthRes.json();
+      if (data.normalized) showNormalized(data.normalized);
+      showToast('Demo mode: normalization shown (no model loaded)', 'error');
+    }
+
+  } catch (err) {
+    showToast(`Error: ${err.message}`, 'error');
+    console.error(err);
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = 'Synthesize';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// WAVEFORM RENDERING
+// ══════════════════════════════════════════════════════════════════
+
+async function drawWaveform(arrayBuffer) {
+  const canvas  = document.getElementById('waveCanvas');
+  const wrap    = document.getElementById('waveWrap');
+  const ctx     = canvas.getContext('2d');
+
+  // Match canvas resolution to display size
+  const W = wrap.clientWidth  || 600;
+  const H = wrap.clientHeight || 88;
+  canvas.width  = W;
+  canvas.height = H;
+
+  // Decode audio
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  let decoded;
+  try {
+    decoded = await audioCtx.decodeAudioData(arrayBuffer);
+  } catch {
+    // fallback: draw flat line if decode fails
+    ctx.strokeStyle = 'rgba(230,57,70,0.4)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, H / 2);
+    ctx.lineTo(W, H / 2);
+    ctx.stroke();
+    return;
+  }
+
+  const samples   = decoded.getChannelData(0);   // Float32Array
+  const barCount  = Math.floor(W / 3);           // 1px bar, 2px gap
+  const blockSize = Math.floor(samples.length / barCount);
+  const midY      = H / 2;
+  const maxAmp    = midY * 0.92;
+
+  // Background
+  ctx.clearRect(0, 0, W, H);
+
+  // Draw bars
+  for (let i = 0; i < barCount; i++) {
+    const start = i * blockSize;
+    let   peak  = 0;
+    for (let j = 0; j < blockSize; j++) {
+      const v = Math.abs(samples[start + j] || 0);
+      if (v > peak) peak = v;
+    }
+
+    const barH  = Math.max(2, peak * maxAmp);
+    const x     = i * 3;
+
+    // Gradient fill: bright at top/bottom, dimmer at centre
+    const grad = ctx.createLinearGradient(0, midY - barH, 0, midY + barH);
+    grad.addColorStop(0,    'rgba(230, 57, 70, 0.9)');
+    grad.addColorStop(0.45, 'rgba(230, 57, 70, 0.5)');
+    grad.addColorStop(0.5,  'rgba(230, 57, 70, 0.35)');
+    grad.addColorStop(0.55, 'rgba(230, 57, 70, 0.5)');
+    grad.addColorStop(1,    'rgba(230, 57, 70, 0.9)');
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, midY - barH, 2, barH * 2);
+  }
+
+  // Centre line
+  ctx.strokeStyle = 'rgba(230,57,70,0.18)';
+  ctx.lineWidth   = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, midY);
+  ctx.lineTo(W, midY);
+  ctx.stroke();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PLAYBACK CONTROLS
+// ══════════════════════════════════════════════════════════════════
+
+function togglePlay() {
+  if (!audio.src) return;
+  if (audio.paused) {
+    audio.play().catch(() => {});
+  } else {
+    audio.pause();
+  }
+}
+
+function setVolume(v) { audio.volume = parseFloat(v); }
+
+function setPlayIcon(playing) {
+  document.getElementById('iconPlay').style.display  = playing ? 'none'  : 'block';
+  document.getElementById('iconPause').style.display = playing ? 'block' : 'none';
+}
+
+function onTimeUpdate() {
+  const dur = audio.duration || 0;
+  const cur = audio.currentTime || 0;
+
+  // Time labels
+  document.getElementById('curTime').textContent = fmtTime(cur);
+  document.getElementById('durTime').textContent = fmtTime(dur);
+
+  // Move playhead
+  if (dur > 0) {
+    const wrap  = document.getElementById('waveWrap');
+    const pct   = cur / dur;
+    const xPos  = pct * wrap.clientWidth;
+    document.getElementById('playhead').style.left = xPos + 'px';
+  }
+}
+
+function seekFromClick(e) {
+  if (!audio.duration) return;
+  const wrap = document.getElementById('waveWrap');
+  const rect = wrap.getBoundingClientRect();
+  const pct  = (e.clientX - rect.left) / rect.width;
+  audio.currentTime = pct * audio.duration;
+}
+
+function fmtTime(s) {
+  if (!isFinite(s)) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60).toString().padStart(2, '0');
+  return `${m}:${sec}`;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = 'show ' + (type === 'error' ? 'error' : type === 'success' ? 'success' : '');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 3500);
+}
+</script>
+</body>
+</html>
