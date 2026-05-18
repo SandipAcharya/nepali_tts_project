@@ -8,8 +8,8 @@ By eliminating complex Grapheme-to-Phoneme (G2P) pipelines and adopting a robust
 
 The project follows a comprehensive pipeline from raw broadcast data collection to a fully interactive User Interface.
 
-![System Architecture Part 1](resources/Grapheme%20Normalization-2026-05-10-164206.png)
-![System Architecture Part 2](resources/flow2.jpg)
+![System Architecture Part 1](resources/system-architecture-1.png)
+![System Architecture Part 2](resources/system-architecture-2.jpg)
 
 ## Core VITS2 Architecture
 
