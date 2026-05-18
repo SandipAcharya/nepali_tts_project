@@ -41,28 +41,7 @@ graph TD
 
 The synthesis engine is driven by a state-of-the-art end-to-end neural network that directly generates raw audio waveforms from textual input without requiring separate vocoders.
 
-```mermaid
-flowchart LR
-    Text[Normalized Devanagari] --> TE(Text Encoder)
-    TE --> SDP(Stochastic Duration Predictor)
-    TE --> Prior(Prior Distribution)
-    
-    Audio[Speech Waveform] --> PE(Posterior Encoder)
-    PE --> LatentZ((Latent Z))
-    
-    Prior --> NF(Normalizing Flows)
-    NF <--> LatentZ
-    
-    SDP --> LatentZ
-    LatentZ --> HG(HiFi-GAN Generator)
-    HG --> SynthesizedAudio[Synthesized Waveform]
-    
-    %% Styling
-    classDef input fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef model fill:#bbf,stroke:#333,stroke-width:2px;
-    class Text,Audio,SynthesizedAudio input;
-    class TE,SDP,Prior,PE,NF,LatentZ,HG model;
-```
+![Core VITS2 Architecture](resources/image.png)
 
 ## Key Features
 
