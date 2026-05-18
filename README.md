@@ -8,40 +8,14 @@ By eliminating complex Grapheme-to-Phoneme (G2P) pipelines and adopting a robust
 
 The project follows a comprehensive pipeline from raw broadcast data collection to a fully interactive User Interface.
 
-```mermaid
-graph TD
-    subgraph Data Preparation
-        A[Raw Audio & Scripts <br/>Sagarmatha TV] --> B(Audio Preprocessing <br/>Mono, 22kHz, Silence Trim)
-        A --> C(Text Normalization <br/>NFC, Verbalization)
-        B --> D[(Curated Nepali News Dataset)]
-        C --> D
-    end
-
-    subgraph VITS2 Training Architecture
-        D --> E[Text Encoder]
-        D --> F[Posterior Encoder]
-        E --> G[Stochastic Duration Predictor]
-        F --> H[Variational Autoencoder & Normalizing Flows]
-        G --> H
-        H --> I[HiFi-GAN Decoder]
-    end
-
-    subgraph Inference & Deployment
-        I --> J((Trained Checkpoint))
-        K[User Input Text] --> L[FastAPI / Flask Backend]
-        L --> M[Text Normalizer]
-        M --> N[VITS2 Generator]
-        J -.-> N
-        N --> O[Next.js Frontend UI]
-        O --> P((Generated WAV Audio))
-    end
-```
+![System Architecture Part 1](resources/Grapheme%20Normalization-2026-05-10-164206.png)
+![System Architecture Part 2](resources/flow2.jpg)
 
 ## Core VITS2 Architecture
 
 The synthesis engine is driven by a state-of-the-art end-to-end neural network that directly generates raw audio waveforms from textual input without requiring separate vocoders.
 
-![Core VITS2 Architecture](resources/image.png)
+![Core VITS2 Architecture](resources/vits-architecture.png)
 
 ## Key Features
 
