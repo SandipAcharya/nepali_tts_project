@@ -10,9 +10,9 @@ The system features a multi-speaker architecture with 7 distinct voices. The fir
 
 | Speaker Profile | Tone / Style | Audio Sample |
 | :--- | :--- | :--- |
-| **Speaker 1** | Normal Model Tone | [🔊 Listen to Sample](resources/speaker_output_1.wav) |
-| **Speaker 2** | Normal Model Tone | [🔊 Listen to Sample](resources/speaker_output_2.wav) |
-| **Speaker 3** | Normal Model Tone | [🔊 Listen to Sample](resources/speaker_output_3.wav) |
+| **Speaker 1** | Normal Male Model Tone | [🔊 Listen to Sample](resources/speaker_output_1.wav) |
+| **Speaker 2** | Normal Female1 Model Tone | [🔊 Listen to Sample](resources/speaker_output_2.wav) |
+| **Speaker 3** | Normal Female2 Tone | [🔊 Listen to Sample](resources/speaker_output_3.wav) |
 | **Speaker 4** | Male News Anchor Tone | [🔊 Listen to Sample](resources/speaker_output_4.wav) |
 | **Speaker 5** | Female News Anchor Tone | [🔊 Listen to Sample](resources/speaker_output_5.wav) |
 | **Speaker 6** | Male News Broadcasting Tone | [🔊 Listen to Sample](resources/speaker_output_6.wav) |
