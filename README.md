@@ -4,6 +4,19 @@ This repository contains the official codebase for the **Nepali News-Style Text-
 
 By eliminating complex Grapheme-to-Phoneme (G2P) pipelines and adopting a robust text-normalization strategy, the system achieves excellent expressive speech synthesis that closely mimics professional news anchors.
 
+## Model Outputs & Audio Samples
+
+The system features a multi-speaker architecture with 7 distinct voices. The first three voices belong to the normal audio model, while the last four are specifically trained and optimized for a professional **News Anchor Tone**.
+
+| Speaker Profile | Tone / Style | Audio Sample |
+| :--- | :--- | :--- |
+| **Speaker 1** | Normal Model Tone | [🔊 Listen to Sample](resources/speaker_output_1.wav) |
+| **Speaker 2** | Normal Model Tone | [🔊 Listen to Sample](resources/speaker_output_2.wav) |
+| **Speaker 3** | Normal Model Tone | [🔊 Listen to Sample](resources/speaker_output_3.wav) |
+| **Speaker 4** | Male News Anchor Tone | [🔊 Listen to Sample](resources/speaker_output_4.wav) |
+| **Speaker 5** | Female News Anchor Tone | [🔊 Listen to Sample](resources/speaker_output_5.wav) |
+| **Speaker 6** | Male News Broadcasting Tone | [🔊 Listen to Sample](resources/speaker_output_6.wav) |
+| **Speaker 7** | Female News Broadcasting Tone | [🔊 Listen to Sample](resources/speaker_output_7.wav) |
 ## System Architecture & Data Flow
 
 The project follows a comprehensive pipeline from raw broadcast data collection to a fully interactive User Interface.
@@ -66,19 +79,6 @@ python app.py
 ```
 The server will start on `http://localhost:5000`. You can test the endpoints or use the built-in UI by navigating to the root URL.
 
-## Model Outputs & Audio Samples
-
-The system features a multi-speaker architecture with 7 distinct voices. The first three voices belong to the base model, while the last four are specifically trained and optimized for a professional **News Anchor Tone**.
-
-| Speaker Profile | Tone / Style | Audio Sample |
-| :--- | :--- | :--- |
-| **Speaker 1** | Base Model Tone | [🔊 Listen to Sample](resources/speaker_output_1.wav) |
-| **Speaker 2** | Base Model Tone | [🔊 Listen to Sample](resources/speaker_output_2.wav) |
-| **Speaker 3** | Base Model Tone | [🔊 Listen to Sample](resources/speaker_output_3.wav) |
-| **Speaker 4** | News Tone | [🔊 Listen to Sample](resources/speaker_output_4.wav) |
-| **Speaker 5** | News Tone | [🔊 Listen to Sample](resources/speaker_output_5.wav) |
-| **Speaker 6** | News Tone | [🔊 Listen to Sample](resources/speaker_output_6.wav) |
-| **Speaker 7** | News Tone | [🔊 Listen to Sample](resources/speaker_output_7.wav) |
 
 ## API Endpoints
 
@@ -93,9 +93,11 @@ If you are interested in reproducing the training dataset from raw Sagarmatha TV
 
 ## Authors
 
+*Supervised by Assoc. Prof. Dr. Dibakar Raj Pant*
+
 Developed by Pulchowk Campus (078 BEI) Students:
 - Sandip Acharya
 - Sahadev Chaulagain
 - Samyam Giri
 
-*Supervised by Assoc. Prof. Dr. Dibakar Raj Pant*
+
