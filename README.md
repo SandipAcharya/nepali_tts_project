@@ -29,7 +29,7 @@ The project follows a comprehensive pipeline from raw broadcast data collection 
 The synthesis engine is driven by a state-of-the-art end-to-end neural network that directly generates raw audio waveforms from textual input without requiring separate vocoders.
 
 ![Core VITS2 Architecture](resources/vits-architecture.png)
-
+![](resources/VITS2Core.jpg)
 ## Key Features
 
 - **VITS2 Architecture:** Utilizes adversarial learning for duration prediction and transformer blocks within normalizing flows for superior speech naturalness.
