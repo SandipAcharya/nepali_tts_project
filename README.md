@@ -66,6 +66,20 @@ python app.py
 ```
 The server will start on `http://localhost:5000`. You can test the endpoints or use the built-in UI by navigating to the root URL.
 
+## Model Outputs & Audio Samples
+
+The system features a multi-speaker architecture with 7 distinct voices. The first three voices belong to the base model, while the last four are specifically trained and optimized for a professional **News Anchor Tone**.
+
+| Speaker Profile | Tone / Style | Audio Sample |
+| :--- | :--- | :--- |
+| **Speaker 1** | Base Model Tone | [🔊 Listen to Sample](resources/speaker_output_1.wav) |
+| **Speaker 2** | Base Model Tone | [🔊 Listen to Sample](resources/speaker_output_2.wav) |
+| **Speaker 3** | Base Model Tone | [🔊 Listen to Sample](resources/speaker_output_3.wav) |
+| **Speaker 4** | News Tone | [🔊 Listen to Sample](resources/speaker_output_4.wav) |
+| **Speaker 5** | News Tone | [🔊 Listen to Sample](resources/speaker_output_5.wav) |
+| **Speaker 6** | News Tone | [🔊 Listen to Sample](resources/speaker_output_6.wav) |
+| **Speaker 7** | News Tone | [🔊 Listen to Sample](resources/speaker_output_7.wav) |
+
 ## API Endpoints
 
 - `GET /api/status` - Returns model loading status.
@@ -83,4 +97,5 @@ Developed by Pulchowk Campus (078 BEI) Students:
 - Sandip Acharya
 - Sahadev Chaulagain
 - Samyam Giri
+
 *Supervised by Assoc. Prof. Dr. Dibakar Raj Pant*
